@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+<title>COSMOS</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link href="//cdn.rawgit.com/noelboss/featherlight/1.7.13/release/featherlight.min.css" type="text/css" rel="stylesheet" />
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+<link href="/i/map.css" type="text/css" rel="stylesheet" />
+<link rel="stylesheet" href="/i/loading.css" />
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+	integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+	crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="//cdn.rawgit.com/noelboss/featherlight/1.7.13/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/i/utils.js" type="text/javascript"></script>
+<script src="cosmos.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="loadingBackground"> </div>
+<div id="bowlG">
+  <div id="bowl_ringG">
+    <div class="ball_holderG">
+      <div class="ballG"> </div>
+    </div>
+  </div>
+</div>
+<noscript>
+Please enable JavaScript to use this page
+</noscript>
+<h1>COSMOS station &mdash; BUNNY</h1>
+<div id="stationTabs">
+	<ul>
+		<li><a href="#details">Site details</a></li>
+		<li><a href="#graphs">Graphs</a></li>
+		<li><a href="#maps">Maps</a></li>
+	</ul>
+  <div id="details" class="jTab">
+    <h2>Site details</h2>
+    <div class="leftCol50">
+      <table>
+        <tr>
+          <th>Site name</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Site easting and northing</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th> Site NGR</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Latitude/longitude</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Region</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Description</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Altitude</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Point land cover</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Soil texture</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Soil thickness</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Bedrock class</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Superficial geology class</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Superficial geology series </th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Reference bulk density</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Reference lattice water</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Reference soil organic carbon</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Calibrated</th>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Long-term annual rainfall</th>
+          <td></td>
+        </tr>
+      </table>
+    </div>
+    <div class="rightCol50">
+      <div class="leftCol50">
+		  <p><figure><a href="images/photos/COCLP_PHENO1.jpg" data-featherlight="image" title="COCLP phenocam"><img src="images/photos/COCLP_PHENO1.jpg" alt="COCLP phenocam" /></a><figcaption>COCLP phenocam</figcaption></figure></p>
+		  <p><figure><a href="images/photos/COCLP_PHOTO1.jpg" title="COCLP photo 1" data-featherlight="image"><img src="images/photos/COCLP_PHOTO1.jpg" alt="COCLP photo 1" /></a><figcaption>COCLP photo 1</figcaption></figure></p>
+      </div>
+      <div class="rightCol50">
+		  <p><figure><a href="images/photos/COCLP_PHOTO2.JPG" title="COCLP photo 2" data-featherlight="image"><img src="images/photos/COCLP_PHOTO2.JPG" alt="COCLP photo 2" /></a><figcaption>COCLP photo 2</figcaption></figure></p>
+      </div>
+    </div>
+  </div>
+  <div id="graphs" class="jTab">
+    <h2>Graphs</h2>
+  </div>
+  <div id="maps" class="jTab">
+    <h2>Maps</h2>
+    <div class="leftCol33">
+		<p class="centred"><figure><a href="images/maps/BUNNY_AirPhoto.png" title="BUNNY satellite photo" data-featherlight="image"><img src="images/maps/BUNNY_AirPhoto.png" alt="BUNNY satellite photo" /></a><figcaption>BUNNY satellite photo</figcaption></figure></p>
+    </div>
+    <div class="leftCol33">
+		<p class="centred"><figure><a href="images/maps/BUNNY_OS_LCM_2015.png" title="BUNNY OS map" data-featherlight="image"><img src="images/maps/BUNNY_OS_LCM_2015.png" alt="BUNNY OS map" /></a><figcaption>BUNNY OS map</figcaption></figure></p>
+    </div>
+    <div class="leftCol33">
+		<p class="centred"><figure><a href="images/maps/BUNNY_location.png" title="BUNNY location map" data-featherlight="image"><img src="images/maps/BUNNY_location.png" alt="BUNNY location map" /></a><figcaption>BUNNY location map</figcaption></figure></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
