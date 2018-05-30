@@ -7,14 +7,20 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <link href="//cdn.rawgit.com/noelboss/featherlight/1.7.13/release/featherlight.min.css" type="text/css" rel="stylesheet" />
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
-<link href="/i/map.css" type="text/css" rel="stylesheet" />
-<link rel="stylesheet" href="/i/loading.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+	integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+	crossorigin=""/>
+<link href="/includes/map.css" type="text/css" rel="stylesheet" />
+<link rel="stylesheet" href="/includes/loading.css" />
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
 	integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
 	crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="//cdn.rawgit.com/noelboss/featherlight/1.7.13/release/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
-<script src="/i/utils.js" type="text/javascript"></script>
+<script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+	integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+	crossorigin="anonymous"></script>
+<script src="/includes/utils.js" type="text/javascript"></script>
 <script src="cosmos.js" type="text/javascript"></script>
 </head>
 <body>
@@ -29,12 +35,12 @@
 <noscript>
 Please enable JavaScript to use this page
 </noscript>
-<h1>COSMOS station &mdash; BUNNY</h1>
+<h1>COSMOS station &mdash; <span class="siteName"></span></h1>
 <div id="stationTabs">
 	<ul>
-		<li><a href="#details">Site details</a></li>
-		<li><a href="#graphs">Graphs</a></li>
-		<li><a href="#maps">Maps</a></li>
+		<li><a href="#details" id="detailsTabLink">Site details</a></li>
+		<li><a href="#graphs" id="graphsTabLink">Graphs</a></li>
+		<li><a href="#maps" id="mapsTabLink">Maps</a></li>
 	</ul>
   <div id="details" class="jTab">
     <h2>Site details</h2>
@@ -42,102 +48,141 @@ Please enable JavaScript to use this page
       <table>
         <tr>
           <th>Site name</th>
-          <td></td>
+          <td class="siteName"></td>
         </tr>
         <tr>
           <th>Site easting and northing</th>
-          <td></td>
+          <td id="bng"></td>
         </tr>
         <tr>
           <th> Site NGR</th>
-          <td></td>
+          <td id="ngr"></td>
         </tr>
         <tr>
           <th>Latitude/longitude</th>
-          <td></td>
+          <td id="latLng"></td>
         </tr>
         <tr>
           <th>Region</th>
-          <td></td>
+          <td id="region"></td>
         </tr>
         <tr>
           <th>Description</th>
-          <td></td>
+          <td id="siteDesc"></td>
         </tr>
         <tr>
-          <th>Altitude</th>
-          <td></td>
+          <th>Altitude (m)</th>
+          <td id="altitude"></td>
         </tr>
         <tr>
           <th>Point land cover</th>
-          <td></td>
+          <td id="lcm"></td>
+        </tr>
+		<tr>
+          <th>HOST class</th>
+          <td id="host"></td>
         </tr>
         <tr>
           <th>Soil texture</th>
-          <td></td>
+          <td id="soilType"></td>
         </tr>
         <tr>
           <th>Soil thickness</th>
-          <td></td>
+          <td id="soilDepth"></td>
         </tr>
         <tr>
           <th>Bedrock class</th>
-          <td></td>
+          <td id="bedrockClass"></td>
         </tr>
         <tr>
           <th>Superficial geology class</th>
-          <td></td>
+          <td id="superficalGeologyClass"></td>
         </tr>
         <tr>
           <th>Superficial geology series </th>
-          <td></td>
+          <td id="superficialGeologySeries"></td>
         </tr>
         <tr>
           <th>Reference bulk density</th>
-          <td></td>
+          <td id="bulkDensity"></td>
         </tr>
         <tr>
           <th>Reference lattice water</th>
-          <td></td>
+          <td id="latticeWater"></td>
         </tr>
         <tr>
           <th>Reference soil organic carbon</th>
-          <td></td>
+          <td id="soilOrganicCarbon"></td>
         </tr>
         <tr>
-          <th>Calibrated</th>
-          <td></td>
+          <th>Calibrated (Y/N)</th>
+          <td id="calibrated"></td>
         </tr>
         <tr>
           <th>Long-term annual rainfall</th>
-          <td></td>
+          <td id="rainfall"></td>
         </tr>
       </table>
     </div>
     <div class="rightCol50">
+	  <div id="mapid" class="station"></div>
       <div class="leftCol50">
-		  <p><figure><a href="images/photos/COCLP_PHENO1.jpg" data-featherlight="image" title="COCLP phenocam"><img src="images/photos/COCLP_PHENO1.jpg" alt="COCLP phenocam" /></a><figcaption>COCLP phenocam</figcaption></figure></p>
-		  <p><figure><a href="images/photos/COCLP_PHOTO1.jpg" title="COCLP photo 1" data-featherlight="image"><img src="images/photos/COCLP_PHOTO1.jpg" alt="COCLP photo 1" /></a><figcaption>COCLP photo 1</figcaption></figure></p>
+		  <figure><a href="images/photos/COCLP_PHENO1.jpg" data-featherlight="image" title="COCLP phenocam"><img src="images/photos/COCLP_PHENO1.jpg" alt="COCLP phenocam" /></a><figcaption>COCLP phenocam</figcaption></figure>
+		  <figure><a href="images/photos/COCLP_PHOTO1.jpg" title="COCLP photo 1" data-featherlight="image"><img src="images/photos/COCLP_PHOTO1.jpg" alt="COCLP photo 1" /></a><figcaption>COCLP photo 1</figcaption></figure>
       </div>
       <div class="rightCol50">
-		  <p><figure><a href="images/photos/COCLP_PHOTO2.JPG" title="COCLP photo 2" data-featherlight="image"><img src="images/photos/COCLP_PHOTO2.JPG" alt="COCLP photo 2" /></a><figcaption>COCLP photo 2</figcaption></figure></p>
+		  <figure><a href="images/photos/COCLP_PHOTO2.JPG" title="COCLP photo 2" data-featherlight="image"><img src="images/photos/COCLP_PHOTO2.JPG" alt="COCLP photo 2" /></a><figcaption>COCLP photo 2</figcaption></figure>
       </div>
     </div>
   </div>
   <div id="graphs" class="jTab">
     <h2>Graphs</h2>
+	<div class="leftCol50">
+	<p>Either choose an amount of days to chart with an offset of days from today</p>
+		<div class="leftCol50">
+			<label for="days-handle">Amount of days to chart</label>
+			<br clear="all" />
+			<div id="graphDays" title="Amount of days to chart">
+				<div id="days-handle" class="ui-slider-handle controlHandle"></div>
+			</div>
+		</div>
+		<div class="rightCol50">
+			<label for="endOffset-handle">Offset from today's date</label>
+			<br clear="all" />
+			<div id="endOffset" title="Offset from today's date">
+				<div id="endOffset-handle" class="ui-slider-handle controlHandle"></div>
+			</div>
+		</div>
+	</div>
+	<div class="rightCol50">
+	<p>Or choose a date range</p>
+		<label for="months-handle">Date range to chart</label>
+		<br clear="all" />
+		<span class="label monthStart"></span>
+		<div id="graphDates" title="Date range to chart">
+			<div id="monthStart-handle" class="ui-slider-handle controlHandle"></div>
+			<div id="monthEnd-handle" class="ui-slider-handle controlHandle"></div>
+		</div>
+		<span class="label monthEnd"></span>
+	</div>
+	<br clear="all" />
+	<div id="graphContainer">
+	<ul id="graphTabLinks" />
+	</div>
   </div>
   <div id="maps" class="jTab">
     <h2>Maps</h2>
-    <div class="leftCol33">
-		<p class="centred"><figure><a href="images/maps/BUNNY_AirPhoto.png" title="BUNNY satellite photo" data-featherlight="image"><img src="images/maps/BUNNY_AirPhoto.png" alt="BUNNY satellite photo" /></a><figcaption>BUNNY satellite photo</figcaption></figure></p>
-    </div>
-    <div class="leftCol33">
-		<p class="centred"><figure><a href="images/maps/BUNNY_OS_LCM_2015.png" title="BUNNY OS map" data-featherlight="image"><img src="images/maps/BUNNY_OS_LCM_2015.png" alt="BUNNY OS map" /></a><figcaption>BUNNY OS map</figcaption></figure></p>
-    </div>
-    <div class="leftCol33">
-		<p class="centred"><figure><a href="images/maps/BUNNY_location.png" title="BUNNY location map" data-featherlight="image"><img src="images/maps/BUNNY_location.png" alt="BUNNY location map" /></a><figcaption>BUNNY location map</figcaption></figure></p>
-    </div>
+	<div id="mapContainer">
+		<div class="leftCol33">
+			<figure class="centred"><a href="images/maps/BUNNY_AirPhoto.png" title="BUNNY satellite photo" data-featherlight="image"><img src="images/maps/BUNNY_AirPhoto.png" alt="BUNNY satellite photo" /></a><figcaption>BUNNY satellite photo</figcaption></figure>
+		</div>
+		<div class="leftCol33">
+			<figure class="centred"><a href="images/maps/BUNNY_OS_LCM_2015.png" title="BUNNY OS map" data-featherlight="image"><img src="images/maps/BUNNY_OS_LCM_2015.png" alt="BUNNY OS map" /></a><figcaption>BUNNY OS map</figcaption></figure>
+		</div>
+		<div class="leftCol33">
+			<figure class="centred"><a href="images/maps/BUNNY_location.png" title="BUNNY location map" data-featherlight="image"><img src="images/maps/BUNNY_location.png" alt="BUNNY location map" /></a><figcaption>BUNNY location map</figcaption></figure>
+		</div>
+	</div>
   </div>
 </div>
 </body>
