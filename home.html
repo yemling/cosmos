@@ -137,33 +137,35 @@ Please enable JavaScript to use this page
   </div>
   <div id="graphs" class="jTab">
     <h2>Graphs</h2>
-	<div class="leftCol50">
-	<p>Either choose an amount of days to chart with an offset of days from today</p>
-		<div class="leftCol50">
+	<h3>Change chart parameters</h3>
+	<div id="parameterTabs">
+		<ul>
+			<li><a href="#daysParams">Choose an amount of days with an optional offset of days from today</a></li>
+			<li><a href="#dateRangeParams">Choose a date range</a></li>
+		</ul>
+		<div class="jTab" id="daysParams">
 			<label for="days-handle">Amount of days to chart</label>
 			<br clear="all" />
 			<div id="graphDays" title="Amount of days to chart">
 				<div id="days-handle" class="ui-slider-handle controlHandle"></div>
 			</div>
-		</div>
-		<div class="rightCol50">
+			<br clear="all" />
 			<label for="endOffset-handle">Offset from today's date</label>
 			<br clear="all" />
 			<div id="endOffset" title="Offset from today's date">
 				<div id="endOffset-handle" class="ui-slider-handle controlHandle"></div>
 			</div>
 		</div>
-	</div>
-	<div class="rightCol50">
-	<p>Or choose a date range</p>
-		<label for="months-handle">Date range to chart</label>
-		<br clear="all" />
-		<span class="label monthStart"></span>
-		<div id="graphDates" title="Date range to chart">
-			<div id="monthStart-handle" class="ui-slider-handle controlHandle"></div>
-			<div id="monthEnd-handle" class="ui-slider-handle controlHandle"></div>
+		<div class="jTab" id="dateRangeParams">
+			<label for="months-handle">Date range to chart</label>
+			<br clear="all" />
+			<span class="label monthStart"></span>
+			<div id="graphDates" title="Date range to chart">
+				<div id="monthStart-handle" class="ui-slider-handle controlHandle"></div>
+				<div id="monthEnd-handle" class="ui-slider-handle controlHandle"></div>
+			</div>
+			<span class="label monthEnd"></span>
 		</div>
-		<span class="label monthEnd"></span>
 	</div>
 	<br clear="all" />
 	<div id="graphContainer">

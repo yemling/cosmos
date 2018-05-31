@@ -78,7 +78,9 @@ cosmos.station = 'ALIC1';
 cosmos.init = function()
 {
 	//jquery ui tabs for the details, graphs and maps tabs
-	$( "#stationTabs" ).tabs();
+	$("#stationTabs").tabs();
+	$("#parameterTabs").tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
+    $("#parameterTabs li").removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
 	$('#graphsTabLink').click(cosmos.drawGraphs);
 	cosmos.drawGraphContainer();
 	//add a magnifying glass on the lightbox images
