@@ -48,7 +48,7 @@ cosmos.renderPage = function()
 {
     jQuery('#jspageDiv').append('<div id="mapid" class="leftCol50"><div id="vwcKey"><h4>VWC percent</h4></div></div>');
     jQuery('#jspageDiv').append('<div id="siteData" class="rightCol50"></div>');
-    jQuery('#siteData').append('<p><label for="tableFilterTxt">Filter sites: </label><input type="text" name="tableFilterTxt" id="tableFilterTxt" /></p>')
+    jQuery('#siteData').append('<p><label for="tableFilterTxt">Filter sites: </label><input type="text" name="tableFilterTxt" id="tableFilterTxt" placeholder="Type at least two letters" /></p>')
     jQuery('#siteData').append('<div id="tableContainer"><table id="siteDetailTable"><tr><th>See on map</th><th>View details</th></tr></table></div>');
 }
 cosmos.drawMap = function(stationData)
@@ -182,7 +182,7 @@ cosmos.outputSiteData = function(siteData)
     };
     jQuery('#tableFilterTxt').keyup(function()
     {
-        wrUtils.filterTable('siteDetailTable');
+        wrUtils.filterTable('siteDetailTable', 'tableFilterTxt', 1);
     });
     //cosmos.map.fitBounds(cosmos.markers.getBounds());
     jQuery('.siteCell').click(cosmos.highlightSite);
@@ -207,15 +207,16 @@ cosmos.highlightSite = function(e)
 cosmos.setMarkerIcon = function(ele)
 {
     var marker = ele;
-    jQuery('#tableFilterTxt').val('');
     //make all table rows visible (if they've been filtered) and cells unhighlighted
-    jQuery(".siteCell").parents('tr').removeClass('highlighted').parents().show();
+    jQuery(".siteCell").parents('tr').removeClass('highlighted');
     //check whether marker is clicked on from the map, ele will contain the whole event if it is from the map, so need to tell it to access the target (which is the marker).
-    if(typeof ele.target != 'undefined')
+    if(typeof ele.target != 'undefined') // is a map element
     {
         marker = ele.target;
         var siteCell = jQuery(".siteCell[rel="+marker.options.id+"]");
         siteCell.parents('tr').addClass('highlighted');        
+        jQuery('#tableFilterTxt').val('');
+        jQuery(".siteCell").parents('tr').show();
     }
     var markerCoords = marker.getLatLng();
     /* cosmos.markers.getLayers().forEach(marker  => {
