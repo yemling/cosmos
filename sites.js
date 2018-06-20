@@ -1,21 +1,43 @@
 var cosmos = {};
-cosmos.relativeUrl = 'http://localhost:8080';
-cosmos.stylesheets = ['//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css', cosmos.relativeUrl+'/includes/featherlight.css', 'https://unpkg.com/leaflet@1.3.1/dist/leaflet.css', cosmos.relativeUrl+'/includes/map.css', cosmos.relativeUrl+'/includes/loading.css'];
-
-(function($){
-	Drupal.behaviors.jspageLoad = {
+cosmos.relativeUrl = 'http://localhost:8080/';
+//cosmos.relativeUrl = 'http://wlarcgis2.nerc-wallingford.ac.uk/cosmos/';
+cosmos.stylesheets = [cosmos.relativeUrl+'/includes/map.css', cosmos.relativeUrl+'/includes/loading.css', '//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css', 'https://use.fontawesome.com/releases/v5.0.13/css/all.css', cosmos.relativeUrl+'/includes/featherlight.css', 'https://unpkg.com/leaflet@1.3.1/dist/leaflet.css', cosmos.relativeUrl+'/includes/Control.MiniMap.min.css', cosmos.relativeUrl+'/includes/slick.css', cosmos.relativeUrl+'/includes/slick-theme.css'];
+//use the below if on Drupal server
+/* (function($){
+	 Drupal.behaviors.jspageLoad = {
 		attach: function(context, settings) {
 		  var jspage = jQuery('#' + settings.jspage.divId);
 		  jspage.once('jspageLoad', function() {
+			    jspage.empty();
 				cosmos.station = settings.jspage.param0;
-				cosmos.getStationData();
-				wrUtils.init();
-				
+				cosmos.getStyleSheets();
+				//give stylesheets chance to load.
+				setTimeout(function () {
+					cosmos.getStationData();
+					wrUtils.init();
+			},  1000);
 		  });
 		}
+	} 
+})(jQuery); */
+//use the below if no Drupal connection
+cosmos.init = function()
+{
+	cosmos.station = 'COCLP';
+	cosmos.getStyleSheets();
+	cosmos.getStationData();
+	wrUtils.init();
+	return;
+}
+$(document).ready(cosmos.init);
+cosmos.getStyleSheets = function()
+{
+	for (var l = 0; l < cosmos.stylesheets.length; l++)
+	{
+		jQuery('head').append('<link href="'+cosmos.stylesheets[l]+'" type="text/css" rel="stylesheet" />');
 	}
-})(jQuery);
-
+	return;
+}
 cosmos.renderPage = function()
 {
 	var defaultHtml = "";
@@ -30,12 +52,11 @@ cosmos.renderPage = function()
 	defaultHtml +='<noscript>\n';
 	defaultHtml +='Please enable JavaScript to use this page\n';
 	defaultHtml +='</noscript>\n';
-	defaultHtml +='<h1>COSMOS station — <span class=\"siteName\"></span></h1>\n';
+	defaultHtml +='<h1>COSMOS-UK site — <span class=\"siteName\"></span></h1>\n';
 	defaultHtml +='<div id=\"stationTabs\">\n';
 	defaultHtml +='	<ul>\n';
 	defaultHtml +='		<li><a href=\"#details\" id=\"detailsTabLink\">Site details</a></li>\n';
 	defaultHtml +='		<li><a href=\"#graphs\" id=\"graphsTabLink\">Graphs</a></li>\n';
-	defaultHtml +='		<li><a href=\"#maps\" id=\"mapsTabLink\">Maps</a></li>\n';
 	defaultHtml +='	</ul>\n';
 	defaultHtml +='  <div id=\"details\" class=\"jTab\">\n';
 	defaultHtml +='    <h2>Site details</h2>\n';
@@ -94,7 +115,7 @@ cosmos.renderPage = function()
 	defaultHtml +='        </tr>\n';
 	defaultHtml +='        <tr>\n';
 	defaultHtml +='          <th>Superficial geology class</th>\n';
-	defaultHtml +='          <td id=\"superficalGeologyClass\"></td>\n';
+	defaultHtml +='          <td id=\"superficialGeologyClass\"></td>\n';
 	defaultHtml +='        </tr>\n';
 	defaultHtml +='        <tr>\n';
 	defaultHtml +='          <th>Superficial geology series </th>\n';
@@ -124,8 +145,8 @@ cosmos.renderPage = function()
 	defaultHtml +='    </div>\n';
 	defaultHtml +='    <div class=\"rightCol50\">\n';
 	defaultHtml +='	  <div id=\"mapid\" class=\"station\"></div>\n';
-	defaultHtml +='      <div id=\"stationPhotos\"></div>\n';
-	defaultHtml +='    </div>\n';
+	defaultHtml +='      <h2>Site photos</h2><div id=\"stationPhotos\" class="slickImages"></div>\n';
+	defaultHtml +='	     <h2>Maps</h2><div id=\"mapContainer\" class="slickImages" /></div>\n';
 	defaultHtml +='  </div>\n';
 	defaultHtml +='  <div id=\"graphs\" class=\"jTab\">\n';
 	defaultHtml +='    <h2>Graphs</h2>\n';
@@ -164,10 +185,6 @@ cosmos.renderPage = function()
 	defaultHtml +='	<ul id=\"graphTabLinks\" />\n';
 	defaultHtml +='	</div>\n';
 	defaultHtml +='  </div>\n';
-	defaultHtml +='  <div id=\"maps\" class=\"jTab\">\n';
-	defaultHtml +='    <h2>Maps</h2>\n';
-	defaultHtml +='	<div id=\"mapContainer\" />\n';
-	defaultHtml +='	</div>\n';
 	defaultHtml +='  </div>\n';
 	defaultHtml +='</div>';
 	return defaultHtml;
@@ -268,7 +285,7 @@ cosmos.graphParams.width = 1000;
 cosmos.graphParams.days = 50;
 cosmos.graphParams.endOffset = 0;
 cosmos.graphParams.startDate = 0;
-cosmos.graphParams.endDate = 30;
+cosmos.graphParams.endDate = 10;
 cosmos.graphParams.urlType = 'days';
 
 cosmos.structurePage = function(defaultHtml)
@@ -282,18 +299,23 @@ cosmos.structurePage = function(defaultHtml)
 	jQuery('#graphsTabLink').click(cosmos.drawGraphs);
 	cosmos.drawGraphContainer();
 	cosmos.outputImages();
-	//add a magnifying glass on the lightbox images
-	jQuery('figure').prepend('<i class="fa fa-search-plus"></i>');
 	//featherlight doesn't add captions to images by default, so extra code here to add it from the alt text.
 	jQuery.featherlight.prototype.afterContent = function() {
 	  var caption = this.$currentTarget.find('img').attr('alt');
 	  this.$instance.find('.caption').remove();
 	  jQuery('<div class="caption">').text(caption).appendTo(this.$instance.find('.featherlight-content'));
 	};
+	cosmos.createSliders();
+	cosmos.drawMap();
+	return;
+}
+cosmos.createSliders = function()
+{
 	var daysHandle = jQuery( "#days-handle" );
 	jQuery( "#graphDays" ).slider({ 
 		min: 1, 
-		max: 180, 
+		max: cosmos.graphParams.maxDays,
+		value: cosmos.graphParams.days,
 		create: function()
 		{
 			daysHandle.text(cosmos.graphParams.days);
@@ -308,7 +330,7 @@ cosmos.structurePage = function(defaultHtml)
 	var endOffsetHandle = jQuery( "#endOffset-handle" );
 	jQuery( "#endOffset" ).slider({ 
 		min: 1, 
-		max: 180, 
+		max: cosmos.graphParams.maxDays, 
 		create: function()
 		{
 			endOffsetHandle.text(cosmos.graphParams.endOffset);
@@ -320,23 +342,21 @@ cosmos.structurePage = function(defaultHtml)
 			cosmos.graphParams.urlType = 'days';
 		}                
 	});
-	cosmos.drawMap();
 	return;
 }
 cosmos.drawMonthSlider = function()
 {
-	wrUtils.dates = wrUtils.getSpiDates();
 	var monthStartHandle = jQuery( "#monthStart-handle" );
 	var monthEndHandle = jQuery( "#monthEnd-handle" );
 	jQuery( "#graphDates" ).slider({ 
 		min: 0, 
 		max: wrUtils.mapDates.length-1, 
 		range:true,
-		values:[cosmos.graphParams.startDate,cosmos.graphParams.endDate],
+		values:[cosmos.graphParams.startDate,wrUtils.mapDates.length-1],
 		create: function()
 		{
 			monthStartHandle.text(wrUtils.formatDate(cosmos.graphParams.startDate).shortDate);
-			monthEndHandle.text(wrUtils.formatDate(cosmos.graphParams.endDate).shortDate);
+			monthEndHandle.text(wrUtils.formatDate(wrUtils.mapDates.length-1).shortDate);
 		},
 		change: function(e,ui){
 			
@@ -355,11 +375,12 @@ cosmos.drawMonthSlider = function()
 cosmos.getStationData = function()
 {
 	var stationDetailUrl = 'https://nrfaapps.ceh.ac.uk/nrfa/json/cosmos-query-data?site='+cosmos.station;
+	//var stationDetailUrl = 'data/cosmos-query-data_BUNNY.json';
 	jQuery.ajax({
 		url:stationDetailUrl,
-		crossdomain:true,
+		/* crossdomain:true,
 		jsonp: "callback",
-		dataType:"jsonp",
+		dataType:"jsonp", */
 		success:cosmos.outputStationData,
 		error: function(jqXHR,textStatus,errorThrown){
 			jQuery('#jspageDiv').html('<p>You have entered an incorrect station ID, please <a href="/data">go back to the map</a> and choose another station.</p>');
@@ -368,29 +389,28 @@ cosmos.getStationData = function()
 }
 cosmos.outputStationData = function(stationData)
 {
-	for (var l = 0; l < cosmos.stylesheets.length; l++)
-	{
-		jQuery('head').append('<link href="'+cosmos.stylesheets[l]+'" type="text/css" rel="stylesheet" />');
-	}
 	var defaultHtml = cosmos.renderPage();
+	var dateDecommissioned = new Date(stationData["date-decommissioned"]);
+	var currentDate = new Date();
+	var calibrated = 'No';
 	cosmos.structurePage(defaultHtml);
 	/* jQuery.ajax({
 		url:cosmos.relativeUrl+ '/cosmos/station.htm',
 		crossDomain:true,
 		success:cosmos.structurePage
 	}); */
-	var calibrated = 'No';
 	if(stationData["calibrated"])
 	{
 		calibrated = 'Yes';
 	}
-	wrUtils.startYear = stationData["date-installed"].split('-')[0];
-	var yearDecommissioned = stationData["date-decommissioned"].split('-')[0];
-	var currentYear = (new Date).getFullYear();
-	if(yearDecommissioned < currentYear)
+	wrUtils.startDate = new Date(stationData["date-installed"]);
+	if(dateDecommissioned < currentDate)
 	{
-		wrUtils.endYear = yearDecommissioned;
+		wrUtils.endDate = dateDecommissioned;
 	}
+	wrUtils.dates = wrUtils.getSpiDates();
+	//once got start date and end date of station, then can get the amount of days since it started to put on the days slider.
+	cosmos.graphParams.maxDays = wrUtils.getDaysBetween();
 	cosmos.drawMonthSlider();
 	jQuery('.siteName').text(stationData["site-name"]);
 	jQuery('#bng').text(stationData.easting+', '+stationData.northing);
@@ -399,10 +419,30 @@ cosmos.outputStationData = function(stationData)
 	jQuery('#siteDesc').text(stationData["description"]);
 	jQuery('#lcm').text(stationData["land-cover"]);
 	jQuery('#altitude').text(stationData["altitude"]);
-	jQuery('#superficalGeologyClass').text(wrUtils.autocase(stationData["bedrock-class"]));
-	jQuery('#soilTexture').text(wrUtils.autocase(stationData["soil-texture"]));
-	jQuery('#soilThickness').text(wrUtils.autocase(stationData["soil-thickness"]));
-	jQuery('#rainfall').text(stationData["saar"]);
+	if(typeof stationData["bedrock-class"] != 'undefined')
+	{
+		jQuery('#bedrockClass').text(wrUtils.autocase(stationData["bedrock-class"]));
+	}
+	if(typeof stationData["super-class"] != 'undefined')
+	{
+		jQuery('#superficialGeologyClass').text(wrUtils.autocase(stationData["super-class"]));
+	}
+	if(typeof stationData["super-series"] != 'undefined')
+	{
+		jQuery('#superficialGeologySeries').text(wrUtils.autocase(stationData["super-series"]));
+	}
+	if(typeof stationData["soil-texture"] != 'undefined')
+	{
+		jQuery('#soilTexture').text(wrUtils.autocase(stationData["soil-texture"]));
+	}
+	if(typeof stationData["soil-thickness"] != 'undefined')
+	{
+		jQuery('#soilThickness').text(wrUtils.autocase(stationData["soil-thickness"]));
+	}
+	if(typeof stationData["saar"] != 'undefined')
+	{
+		jQuery('#rainfall').text(stationData["saar"]);
+	}
 	if(typeof stationData["calibration-info"] != 'undefined')
 	{
 		jQuery('#bulkDensity').text(stationData["calibration-info"]["ref-bulk-density"]);
@@ -427,26 +467,55 @@ cosmos.outputStationData = function(stationData)
 }
 cosmos.drawMap = function(stationData)
 {
-	cosmos.map = L.map('mapid');
-	cosmos.osMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.streets',
-		accessToken: 'pk.eyJ1IjoiZ2VtbWF2bmFzaCIsImEiOiJjamdwNjR5YzMwZTc5MndtZDJteDFpY3lwIn0.3Exi_QhPZuuxHRcBXmpo5A'
-	}).addTo(cosmos.map);
-	cosmos.getWMSlayers();
+	var osmUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZ2VtbWF2bmFzaCIsImEiOiJjamdwNjR5YzMwZTc5MndtZDJteDFpY3lwIn0.3Exi_QhPZuuxHRcBXmpo5A';
+	var osmAttrib = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>';
+	var sateliteMap = L.tileLayer(osmUrl, {
+		attribution: osmAttrib,
+		id: 'mapbox.streets-satellite'
+	});
+	var streetMap = L.tileLayer(osmUrl, {
+		attribution: osmAttrib,
+		id: 'mapbox.streets'
+	});
+	var baseMaps = {
+		"Streets": streetMap,
+		"Satellite" :sateliteMap
+	};
+	cosmos.map = L.map('mapid', {
+		layers: [sateliteMap], 
+		center:[55,-4.17], 
+			zoom:5
+	});
+	L.control.layers(baseMaps).addTo(cosmos.map);
+	cosmos.osm2 = new L.TileLayer(osmUrl, {id:'mapbox.streets', attribution: osmAttrib});
+	//cosmos.getWMSlayers();
 	return;
 }
 cosmos.updateMap = function(stationData)
 {
-	var markerIcon = L.icon({
+	var markerLayer = new L.layerGroup();
+	var markerIcon = new L.icon({
 		iconUrl: cosmos.relativeUrl+'/includes/images/redicon.png',
-		iconSize: [10, 10],
-		iconAnchor: [15, 15],
-		popupAnchor: [-7, -12]
+		iconSize: [10, 10]
 	});
-	var stationCoords = [stationData.latitude,stationData.longitude];
-	cosmos.map.setView(stationCoords, 13);
-	var marker = L.marker(stationCoords, {title:stationData["site-name"], icon:markerIcon}).addTo(cosmos.map);
+	var stationCoords = [parseFloat(stationData.latitude),parseFloat(stationData.longitude)];
+	//to get the marker and circle on both maps, have to draw them twice. 
+	var siteCircle = new L.circle(stationCoords, {radius: 200}).addTo(cosmos.map);
+	var siteMarker = new L.marker(stationCoords, {title:stationData["site-name"], icon:markerIcon});
+	var mmMarker = new L.marker(stationCoords, {title:stationData["site-name"], icon:markerIcon});
+	var mmCircle = new L.circle(stationCoords, {radius: 200}).addTo(cosmos.map); 
+	siteMarker.addTo(cosmos.map);
+	mmMarker.addTo(markerLayer);
+	mmCircle.addTo(markerLayer);
+	var mmLayers = new L.LayerGroup([cosmos.osm2, markerLayer]);
+	var miniMap = new L.Control.MiniMap(mmLayers, {
+		centerFixed: stationCoords,
+		zoomLevelFixed: 14,
+		width:160,
+		height:160,
+		position: 'bottomleft'
+	}).addTo(cosmos.map);
+	cosmos.map.invalidateSize();
 	return;
 }
 cosmos.getWMSlayers = function()
@@ -460,7 +529,6 @@ cosmos.getWMSlayers = function()
 		attribution: "BGS superficial geology 50K"
 	})
 	.addTo(cosmos.map);
-
 	return;
 }
 cosmos.drawGraphContainer = function()
@@ -485,6 +553,8 @@ cosmos.drawGraphs = function()
 {
 	var t = 0;
 	var hasParams = false;
+	var smallGraph = '&w='+cosmos.graphParams.width;
+	var largeGraph = '&w=1600';
 	jQuery('.groupedGraphs').empty();
 	//get the id of the graph type div container from the cosmos.graphTabID to add the images to
 	var graphTab = jQuery.grep(cosmos.graphTypes, function(obj){return obj.id === cosmos.graphTabID;})[0];
@@ -492,35 +562,50 @@ cosmos.drawGraphs = function()
 	for (t; t < graphTab.graphs.length; t++)
 	{
 		var graphType = graphTab.graphs[t];
-		var graphSrc = 'http://nrfaapps.ceh.ac.uk/nrfa/image/cosmos/graph.png?db-level=2&site='+cosmos.station+'&h='+cosmos.graphParams.height+'&w='+cosmos.graphParams.width+'&parameter='+graphType.id;
+		var graphCaption = '';
+		var graphSrc = 'http://nrfaapps.ceh.ac.uk/nrfa/image/cosmos/graph.png?db-level=2&site='+cosmos.station+'&h='+cosmos.graphParams.height+'&parameter='+graphType.id;
 		//either draw the days 
 		if((cosmos.graphParams.days > 0 || cosmos.graphParams.endOffset > 0) && cosmos.graphParams.urlType === 'days')
 		{
 			graphSrc+='&days='+cosmos.graphParams.days+'&end-offset=-'+cosmos.graphParams.endOffset;
+			graphCaption = graphType.name+' for last '+cosmos.graphParams.days+' days';
 			hasParams = true;
 		}
 		//or the date range
 		else if(cosmos.graphParams.startDate != 0 && cosmos.graphParams.endDate != 0 && cosmos.graphParams.urlType === 'months')
 		{
 			graphSrc+='&date='+cosmos.graphParams.startDate+'/'+cosmos.graphParams.endDate;
+			graphCaption = graphType.name+' for date range '+cosmos.graphParams.startDate+' to ' +cosmos.graphParams.endDate; 
 			hasParams = true;
 		}
 		if(hasParams)
 		// draw the graphs from the web service.
 		{
-			jQuery('#'+graphTab.id).append('<div id="graph'+graphType.id+'" class="leftCol33"><figure class="loading"><a href="'+graphSrc+'" data-featherlight="image" title="'+graphType.name+' for last '+cosmos.graphParams.days+' days"><img alt="'+graphType.name+' for last '+cosmos.graphParams.days+' days" /></a><figcaption>'+graphType.name+'</figcaption></figure></div>');
-			jQuery('#graph'+graphType.id).find('img').attr('src',graphSrc);
+			jQuery('#'+graphTab.id).append('<div id="graph'+graphType.id+'" class="leftCol33"><figure class="loading"><a href="'+graphSrc+largeGraph+'" data-featherlight="image" title="'+graphCaption+'"><img alt="'+graphCaption+'" /></a><figcaption>'+graphType.name+'</figcaption></figure></div>');
+			jQuery('#graph'+graphType.id).find('img').attr('src',graphSrc+smallGraph);
 		}
 	}
 	return;
 }
 cosmos.outputImages = function()
 {
-	jQuery('#mapContainer').append('<div class="leftCol33"><figure class="centred"><a href="'+cosmos.relativeUrl+'/cosmos/images/maps/AirPhoto_%20'+cosmos.station+'.png" title="'+cosmos.station+' satellite photo" data-featherlight="image"><img src="'+cosmos.relativeUrl+'/cosmos/images/maps/AirPhoto_%20'+cosmos.station+'.png" alt="'+cosmos.station+' satellite photo" /></a><figcaption>'+cosmos.station+' satellite photo</figcaption></figure></div>');
-	jQuery('#mapContainer').append('<div class="leftCol33"><figure class="centred"><a href="'+cosmos.relativeUrl+'/cosmos/images/maps/LCM_%20'+cosmos.station+'.png" title="'+cosmos.station+' LCM" data-featherlight="image"><img src="'+cosmos.relativeUrl+'/cosmos/images/maps/LCM_%20'+cosmos.station+'.png" alt="'+cosmos.station+' LCM" /></a><figcaption>'+cosmos.station+' LCM</figcaption></figure></div>');
-	jQuery('#mapContainer').append('<div class="leftCol33"><figure class="centred"><a href="'+cosmos.relativeUrl+'/cosmos/images/maps/StreetView_%20'+cosmos.station+'.png" title="'+cosmos.station+' street view" data-featherlight="image"><img src="'+cosmos.relativeUrl+'/cosmos/images/maps/StreetView_%20'+cosmos.station+'.png" alt="'+cosmos.station+' street view" /></a><figcaption>'+cosmos.station+' street view</figcaption></figure></div>');
-	jQuery('#stationPhotos').append('<div class="leftCol33"><figure class="centred"><a href="'+cosmos.relativeUrl+'/cosmos/images/photos/photo1_'+cosmos.station+'.jpg" title="'+cosmos.station+' photo 1" data-featherlight="image"><img src="'+cosmos.relativeUrl+'/cosmos/images/photos/photo1_'+cosmos.station+'.jpg" alt="'+cosmos.station+' photo 1" /></a><figcaption>'+cosmos.station+' photo 1</figcaption></figure></div>');
-	jQuery('#stationPhotos').append('<div class="leftCol33"><figure class="centred"><a href="'+cosmos.relativeUrl+'/cosmos/images/photos/photo1_'+cosmos.station+'.jpg" title="'+cosmos.station+' photo 2" data-featherlight="image"><img src="'+cosmos.relativeUrl+'/cosmos/images/photos/photo2_'+cosmos.station+'.jpg" alt="'+cosmos.station+' photo 2" /></a><figcaption>'+cosmos.station+' photo 2</figcaption></figure></div>');
-	jQuery('#stationPhotos').append('<div class="leftCol33"><figure class="centred"><a href="'+cosmos.relativeUrl+'/cosmos/images/photos/pheno_'+cosmos.station+'.jpg" title="'+cosmos.station+' phenocam" data-featherlight="image"><img src="'+cosmos.relativeUrl+'/cosmos/images/photos/pheno_'+cosmos.station+'.jpg" alt="'+cosmos.station+' phenocam" /></a><figcaption>'+cosmos.station+' phenocam</figcaption></figure></div>');
+	var imgUrl = cosmos.relativeUrl;
+	if(cosmos.relativeUrl === 'http://localhost:8080/')
+	{
+		imgUrl = cosmos.relativeUrl + 'cosmos/';
+	}
+	jQuery('#mapContainer').append('<div><figure><a href="'+imgUrl+'images/maps/AirPhoto_%20'+cosmos.station+'.png" title="'+cosmos.station+' satellite photo. Click to enlarge." data-featherlight="image"><img src="'+imgUrl+'/images/maps/AirPhoto_%20'+cosmos.station+'.png" alt="'+cosmos.station+' satellite photo" /></a><figcaption class="centred">'+cosmos.station+' satellite photo</figcaption></figure></div>');
+	jQuery('#mapContainer').append('<div><figure><a href="'+imgUrl+'images/maps/LCM_%20'+cosmos.station+'.png" title="'+cosmos.station+' land cover map. Click to enlarge." data-featherlight="image"><img src="'+imgUrl+'/images/maps/LCM_%20'+cosmos.station+'.png" alt="'+cosmos.station+' land cover map" /></a><figcaption class="centred">'+cosmos.station+' land cover map</figcaption></figure></div>');
+	jQuery('#mapContainer').append('<div><figure><a href="'+imgUrl+'images/maps/StreetView_%20'+cosmos.station+'.png" title="'+cosmos.station+' street view. Click to enlarge." data-featherlight="image"><img src="'+imgUrl+'/images/maps/StreetView_%20'+cosmos.station+'.png" alt="'+cosmos.station+' street view" /></a><figcaption class="centred">'+cosmos.station+' street view</figcaption></figure></div>');
+	jQuery('#stationPhotos').append('<div><figure><a href="'+imgUrl+'images/photos/photo1_'+cosmos.station+'.jpg" title="'+cosmos.station+' photo 1. Click to enlarge." data-featherlight="image"><img src="'+imgUrl+'/images/photos/photo1_'+cosmos.station+'.jpg" alt="'+cosmos.station+' photo 1" /></a><figcaption class="centred">'+cosmos.station+' photo 1</figcaption></figure></div>');
+	jQuery('#stationPhotos').append('<div><figure><a href="'+imgUrl+'images/photos/photo1_'+cosmos.station+'.jpg" title="'+cosmos.station+' photo 2. Click to enlarge." data-featherlight="image"><img src="'+imgUrl+'/images/photos/photo2_'+cosmos.station+'.jpg" alt="'+cosmos.station+' photo 2" /></a><figcaption class="centred">'+cosmos.station+' photo 2</figcaption></figure></div>');
+	jQuery('#stationPhotos').append('<div><figure><a href="'+imgUrl+'images/photos/pheno_'+cosmos.station+'.jpg" title="'+cosmos.station+' phenocam. Click to enlarge." data-featherlight="image"><img src="'+imgUrl+'/images/photos/pheno_'+cosmos.station+'.jpg" alt="'+cosmos.station+' phenocam" /></a><figcaption class="centred">'+cosmos.station+' phenocam</figcaption></figure></div>');
+	jQuery('.slickImages').slick({
+		dots: true,
+		infinite: true,
+		speed: 500,
+		fade: true,
+		cssEase: 'linear'
+	});
 	return;
 };
